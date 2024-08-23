@@ -7,619 +7,289 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none; /* Bloquea selección de texto */
         }
+        h1 {
+            color: #333;
+        }
+        .quiz-container {
+            background-color: #fff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 800px;
+            display: none; /* Oculto hasta que se ingrese el NIE válido */
+        }
+        .question {
+            margin-bottom: 15px;
+        }
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options li {
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #results {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            width: 100%;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+        }
+        .input-field {
+            margin-bottom: 10px;
+        }
+        .input-field label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-field input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        /* Cronómetro flotante */
         #timer {
             position: fixed;
             top: 10px;
             right: 10px;
-            background-color: #f2f2f2;
-            border: 1px solid #ccc;
             padding: 10px;
+            background-color: green;
+            color: white;
             font-size: 18px;
             border-radius: 5px;
         }
-        .hidden {
-            display: none;
+        /* Estilo para los números de preguntas incorrectas */
+        .incorrect-answers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .question {
-            margin-bottom: 20px;
-        }
-        .question h3 {
-            margin-bottom: 10px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        #resultsModal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
-        #overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 500;
+        .incorrect-answers div {
+            width: 18%;
+            text-align: center;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 5px;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <div id="timer" class="hidden">Tiempo restante: <span id="time">30:00</span></div>
+    <h1>Evaluación Unidad 5: Las Ondas</h1>
+    <div class="quiz-container">
+        <div id="quiz"></div>
+        <button id="submit">Enviar respuestas</button>
+    </div>
+    <footer>
+        &copy; Derechos Reservados Prof. Alberto Sanchez
+    </footer>
 
-    <div class="container">
-        <div id="studentInfoForm">
-            <h2>Información del Estudiante</h2>
-            <form id="infoForm">
-                <label for="name">Nombre del Estudiante:</label>
-                <input type="text" id="name" required><br><br>
+    <!-- Modal para solicitar nombre y NIE -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <h2>Por favor, ingresa tus datos</h2>
+            <div class="input-field">
+                <label for="fullname">Nombre completo:</label>
+                <input type="text" id="fullname" required>
+            </div>
+            <div class="input-field">
                 <label for="nie">NIE:</label>
-                <input type="text" id="nie" required><br><br>
-                <label for="unit">Unidad Evaluada:</label>
-                <input type="text" id="unit" value="Unidad 5: Las Ondas" readonly><br><br>
-                <button type="submit">Iniciar Evaluación</button>
-            </form>
+                <input type="text" id="nie" required>
+            </div>
+            <button id="startQuiz">Comenzar Evaluación</button>
         </div>
-
-        <div id="quiz" class="hidden">
-            <h2>Evaluación Unidad 5: Las Ondas</h2>
-
-            <div id="questions-container"></div>
-
-            <button id="submitQuiz">OBTENER CALIFICACIÓN</button>
-        </div>
-
-        <div id="resultsModal">
-            <h2>Resultados</h2>
-            <p id="date"></p>
-            <p id="timeTaken"></p>
-            <p id="unitEvaluated"></p>
-            <p id="studentName"></p>
-            <p id="studentNIE"></p>
-            <p id="score"></p>
-            <p id="incorrectAnswers"></p>
-            <button id="closeModal">Cerrar</button>
-        </div>
-
-        <div id="overlay"></div>
     </div>
 
-    <script>
-        const nieList = ["4267837", "3850952", "3851018", "5032035", "19806181", "6297536", "2608724", "6262810", "4267838", "20162435", "3850923", "19806209", "4267828", "3850942"];
-        const maxTime = 30 * 60; // 30 minutos en segundos
-        let timeRemaining = maxTime;
-        const timerElement = document.getElementById('time');
-        let startTime;
+    <!-- Modal de resultados -->
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Resultados de la Evaluación</h2>
+            <p id="modalName"></p>
+            <p id="modalNIE"></p>
+            <h3>Preguntas incorrectas:</h3>
+            <div id="modalIncorrectAnswers" class="incorrect-answers"></div>
+            <h3>Detalles:</h3>
+            <p id="modalDetails"></p>
+            <h3>Intentos de manipulación detectados:</h3>
+            <p id="manipulationCount"></p>
+            <h3>Reintentos:</h3>
+            <p id="attemptCount"></p>
+        </div>
+    </div>
 
-        const questions = [
-            // Indicador 5.1
+    <div id="timer">30:00</div>
+
+    <script>
+        const quizData = [
             {
-                id: 'q1',
-                indicator: 'Indicador 5.1: Experimenta y diferencia con interés las ondas transversales y longitudinales por sus características.',
-                question: "¿Cuál de las siguientes es una característica de las ondas transversales?",
-                options: [
-                    { value: 'a', text: "Las partículas del medio se mueven perpendicularmente a la dirección de la propagación de la onda." },
-                    { value: 'b', text: "Las partículas del medio se mueven en la misma dirección que la onda." },
-                    { value: 'c', text: "La onda se propaga en un medio vacío." },
-                    { value: 'd', text: "No hay movimiento de partículas en el medio." }
-                ]
-            },
-            {
-                id: 'q2',
-                indicator: 'Indicador 5.1: Experimenta y diferencia con interés las ondas transversales y longitudinales por sus características.',
-                question: "¿Qué tipo de onda es una onda sonora?",
-                options: [
-                    { value: 'a', text: "Longitudinal." },
-                    { value: 'b', text: "Transversal." },
-                    { value: 'c', text: "Electromagnética." },
-                    { value: 'd', text: "Gravitacional." }
-                ]
-            },
-            {
-                id: 'q3',
-                indicator: 'Indicador 5.1: Experimenta y diferencia con interés las ondas transversales y longitudinales por sus características.',
-                question: "¿Cuál de las siguientes es un ejemplo de una onda transversal?",
-                options: [
-                    { value: 'a', text: "Onda en una cuerda." },
-                    { value: 'b', text: "Onda sonora." },
-                    { value: 'c', text: "Onda sísmica P." },
-                    { value: 'd', text: "Onda de presión en un fluido." }
-                ]
-            },
-            {
-                id: 'q4',
-                indicator: 'Indicador 5.1: Experimenta y diferencia con interés las ondas transversales y longitudinales por sus características.',
-                question: "¿Qué ocurre con las partículas de un medio cuando una onda longitudinal pasa a través de él?",
-                options: [
-                    { value: 'a', text: "Las partículas se mueven en la misma dirección que la onda." },
-                    { value: 'b', text: "Las partículas se mueven perpendicularmente a la dirección de la onda." },
-                    { value: 'c', text: "Las partículas no se mueven." },
-                    { value: 'd', text: "Las partículas se mueven en círculos." }
-                ]
-            },
-            {
-                id: 'q5',
-                indicator: 'Indicador 5.1: Experimenta y diferencia con interés las ondas transversales y longitudinales por sus características.',
-                question: "¿Cuál de las siguientes afirmaciones es correcta sobre las ondas transversales?",
-                options: [
-                    { value: 'a', text: "La dirección de propagación es perpendicular al movimiento de las partículas." },
-                    { value: 'b', text: "Las partículas se mueven en la misma dirección que la onda." },
-                    { value: 'c', text: "Requieren un medio para propagarse." },
-                    { value: 'd', text: "No pueden propagarse en el vacío." }
-                ]
-            },
-            // Indicador 5.2
-            {
-                id: 'q6',
-                indicator: 'Indicador 5.2: Experimenta y explica con interés la forma de propagación de las ondas en diversos medios.',
-                question: "¿Cómo se propaga una onda sonora en el aire?",
-                options: [
-                    { value: 'a', text: "A través de la compresión y rarefacción de las moléculas de aire." },
-                    { value: 'b', text: "Por la vibración perpendicular de las moléculas de aire." },
-                    { value: 'c', text: "Por el desplazamiento de las moléculas sin cambio de densidad." },
-                    { value: 'd', text: "Por la dispersión de las moléculas en todas las direcciones." }
-                ]
-            },
-            {
-                id: 'q7',
-                indicator: 'Indicador 5.2: Experimenta y explica con interés la forma de propagación de las ondas en diversos medios.',
-                question: "¿Qué tipo de medio es necesario para la propagación de ondas mecánicas?",
-                options: [
-                    { value: 'a', text: "Un medio material como sólidos, líquidos o gases." },
-                    { value: 'b', text: "Un medio vacío." },
-                    { value: 'c', text: "Un campo electromagnético." },
-                    { value: 'd', text: "Un medio de temperatura extremadamente baja." }
-                ]
-            },
-            {
-                id: 'q8',
-                indicator: 'Indicador 5.2: Experimenta y explica con interés la forma de propagación de las ondas en diversos medios.',
-                question: "¿Qué sucede con la velocidad de una onda cuando cambia de un medio a otro con diferente densidad?",
-                options: [
-                    { value: 'a', text: "La velocidad cambia dependiendo de la densidad del nuevo medio." },
-                    { value: 'b', text: "La velocidad se mantiene constante." },
-                    { value: 'c', text: "La onda se detiene." },
-                    { value: 'd', text: "La velocidad aumenta independientemente del medio." }
-                ]
-            },
-            {
-                id: 'q9',
-                indicator: 'Indicador 5.2: Experimenta y explica con interés la forma de propagación de las ondas en diversos medios.',
-                question: "¿Qué tipo de onda puede propagarse en el vacío?",
-                options: [
-                    { value: 'a', text: "Ondas electromagnéticas." },
-                    { value: 'b', text: "Ondas sonoras." },
-                    { value: 'c', text: "Ondas mecánicas." },
-                    { value: 'd', text: "Ondas longitudinales." }
-                ]
-            },
-            {
-                id: 'q10',
-                indicator: 'Indicador 5.2: Experimenta y explica con interés la forma de propagación de las ondas en diversos medios.',
-                question: "¿Cómo afecta la rigidez de un medio a la velocidad de propagación de una onda mecánica?",
-                options: [
-                    { value: 'a', text: "A mayor rigidez, mayor velocidad de propagación." },
-                    { value: 'b', text: "A menor rigidez, mayor velocidad de propagación." },
-                    { value: 'c', text: "La rigidez no afecta la velocidad de propagación." },
-                    { value: 'd', text: "Depende del tipo de onda." }
-                ]
-            },
-            // Indicador 5.3
-            {
-                id: 'q11',
-                indicator: 'Indicador 5.3: Indaga, representa y describe con interés la transmisión de energía y resonancia a través de las ondas.',
-                question: "¿Qué es la resonancia en el contexto de las ondas?",
-                options: [
-                    { value: 'a', text: "El aumento de la amplitud de una onda cuando la frecuencia coincide con la frecuencia natural del sistema." },
-                    { value: 'b', text: "La disminución de la amplitud de una onda en un medio resonante." },
-                    { value: 'c', text: "La propagación de una onda sin cambios en su amplitud." },
-                    { value: 'd', text: "El cambio de la dirección de una onda al pasar a través de un nuevo medio." }
-                ]
-            },
-            {
-                id: 'q12',
-                indicator: 'Indicador 5.3: Indaga, representa y describe con interés la transmisión de energía y resonancia a través de las ondas.',
-                question: "¿Qué fenómeno ocurre cuando una onda sonora induce la vibración en un objeto que comparte la misma frecuencia natural?",
-                options: [
-                    { value: 'a', text: "Resonancia." },
-                    { value: 'b', text: "Interferencia." },
-                    { value: 'c', text: "Refracción." },
-                    { value: 'd', text: "Difracción." }
-                ]
-            },
-            {
-                id: 'q13',
-                indicator: 'Indicador 5.3: Indaga, representa y describe con interés la transmisión de energía y resonancia a través de las ondas.',
-                question: "¿Qué sucede con la energía de una onda cuando ocurre la resonancia?",
-                options: [
-                    { value: 'a', text: "La energía se amplifica significativamente." },
-                    { value: 'b', text: "La energía disminuye rápidamente." },
-                    { value: 'c', text: "La energía se dispersa en todas direcciones." },
-                    { value: 'd', text: "La energía permanece constante." }
-                ]
-            },
-            {
-                id: 'q14',
-                indicator: 'Indicador 5.3: Indaga, representa y describe con interés la transmisión de energía y resonancia a través de las ondas.',
-                question: "¿Qué relación existe entre la frecuencia de una onda y la resonancia en un sistema?",
-                options: [
-                    { value: 'a', text: "La resonancia ocurre cuando la frecuencia de la onda coincide con la frecuencia natural del sistema." },
-                    { value: 'b', text: "La resonancia ocurre cuando la frecuencia de la onda es mayor que la frecuencia natural del sistema." },
-                    { value: 'c', text: "La resonancia no depende de la frecuencia." },
-                    { value: 'd', text: "La resonancia ocurre solo si la frecuencia de la onda es menor que la frecuencia natural del sistema." }
-                ]
-            },
-            {
-                id: 'q15',
-                indicator: 'Indicador 5.3: Indaga, representa y describe con interés la transmisión de energía y resonancia a través de las ondas.',
-                question: "¿Cómo afecta la resonancia a un puente cuando una frecuencia de onda coincide con su frecuencia natural?",
-                options: [
-                    { value: 'a', text: "Puede amplificar las vibraciones y causar daños estructurales." },
-                    { value: 'b', text: "Disminuye las vibraciones y estabiliza el puente." },
-                    { value: 'c', text: "No tiene efecto sobre la estructura del puente." },
-                    { value: 'd', text: "Cambia la frecuencia natural del puente." }
-                ]
-            },
-            // Indicador 5.4
-            {
-                id: 'q16',
-                indicator: 'Indicador 5.4: Representa y describe con seguridad las propiedades que caracterizan a las ondas mecánicas.',
-                question: "¿Cuál es la principal diferencia entre una onda mecánica y una onda electromagnética?",
-                options: [
-                    { value: 'a', text: "Las ondas mecánicas requieren un medio material para propagarse." },
-                    { value: 'b', text: "Las ondas mecánicas se propagan más rápido en el vacío." },
-                    { value: 'c', text: "Las ondas mecánicas pueden propagarse sin pérdida de energía." },
-                    { value: 'd', text: "Las ondas mecánicas no se ven afectadas por la densidad del medio." }
-                ]
-            },
-            {
-                id: 'q17',
-                indicator: 'Indicador 5.4: Representa y describe con seguridad las propiedades que caracterizan a las ondas mecánicas.',
-                question: "¿Qué propiedad de una onda mecánica se mide en hercios (Hz)?",
-                options: [
-                    { value: 'a', text: "La frecuencia." },
-                    { value: 'b', text: "La amplitud." },
-                    { value: 'c', text: "La velocidad." },
-                    { value: 'd', text: "La longitud de onda." }
-                ]
-            },
-            {
-                id: 'q18',
-                indicator: 'Indicador 5.4: Representa y describe con seguridad las propiedades que caracterizan a las ondas mecánicas.',
-                question: "¿Cómo se define la amplitud de una onda mecánica?",
-                options: [
-                    { value: 'a', text: "La máxima distancia que alcanza una partícula del medio desde su posición de equilibrio." },
-                    { value: 'b', text: "La distancia entre dos crestas consecutivas." },
-                    { value: 'c', text: "La cantidad de energía transportada por la onda." },
-                    { value: 'd', text: "La velocidad de la onda en el medio." }
-                ]
-            },
-            {
-                id: 'q19',
-                indicator: 'Indicador 5.4: Representa y describe con seguridad las propiedades que caracterizan a las ondas mecánicas.',
-                question: "¿Qué relación existe entre la frecuencia y la longitud de onda de una onda mecánica en un medio determinado?",
-                options: [
-                    { value: 'a', text: "La frecuencia y la longitud de onda son inversamente proporcionales." },
-                    { value: 'b', text: "La frecuencia y la longitud de onda son directamente proporcionales." },
-                    { value: 'c', text: "La frecuencia no afecta la longitud de onda." },
-                    { value: 'd', text: "La frecuencia y la longitud de onda son independientes entre sí." }
-                ]
-            },
-            {
-                id: 'q20',
-                indicator: 'Indicador 5.4: Representa y describe con seguridad las propiedades que caracterizan a las ondas mecánicas.',
-                question: "¿Qué propiedad de una onda mecánica determina su velocidad en un medio?",
-                options: [
-                    { value: 'a', text: "La densidad del medio." },
-                    { value: 'b', text: "La amplitud de la onda." },
-                    { value: 'c', text: "La frecuencia de la onda." },
-                    { value: 'd', text: "El tipo de onda." }
-                ]
-            },
-            // Indicador 5.5
-            {
-                id: 'q21',
-                indicator: 'Indicador 5.5: Explica con seguridad el objeto de estudio de la óptica geométrica y de la óptica ondulatoria.',
-                question: "¿Qué estudia la óptica geométrica?",
-                options: [
-                    { value: 'a', text: "El comportamiento de la luz en términos de rayos." },
-                    { value: 'b', text: "La naturaleza ondulatoria de la luz." },
-                    { value: 'c', text: "La interacción de la luz con los campos eléctricos." },
-                    { value: 'd', text: "La energía transportada por las ondas electromagnéticas." }
-                ]
-            },
-            {
-                id: 'q22',
-                indicator: 'Indicador 5.5: Explica con seguridad el objeto de estudio de la óptica geométrica y de la óptica ondulatoria.',
-                question: "¿Cuál es la principal diferencia entre la óptica geométrica y la óptica ondulatoria?",
-                options: [
-                    { value: 'a', text: "La óptica geométrica considera la luz como rayos, mientras que la óptica ondulatoria considera la luz como ondas." },
-                    { value: 'b', text: "La óptica geométrica estudia la interferencia, mientras que la óptica ondulatoria estudia la reflexión." },
-                    { value: 'c', text: "La óptica geométrica considera la luz como partículas, mientras que la óptica ondulatoria considera la luz como ondas." },
-                    { value: 'd', text: "La óptica geométrica es un campo moderno, mientras que la óptica ondulatoria es una teoría antigua." }
-                ]
-            },
-            {
-                id: 'q23',
-                indicator: 'Indicador 5.5: Explica con seguridad el objeto de estudio de la óptica geométrica y de la óptica ondulatoria.',
-                question: "¿Qué fenómeno estudia la óptica ondulatoria que no se explica por la óptica geométrica?",
-                options: [
-                    { value: 'a', text: "Interferencia y difracción de la luz." },
-                    { value: 'b', text: "Reflexión y refracción de la luz." },
-                    { value: 'c', text: "Absorción de la luz." },
-                    { value: 'd', text: "Transmisión de la luz en medios transparentes." }
-                ]
-            },
-            {
-                id: 'q24',
-                indicator: 'Indicador 5.5: Explica con seguridad el objeto de estudio de la óptica geométrica y de la óptica ondulatoria.',
-                question: "¿Qué suposición se hace sobre la luz en la óptica geométrica?",
-                options: [
-                    { value: 'a', text: "Que la luz viaja en líneas rectas." },
-                    { value: 'b', text: "Que la luz se comporta como una onda." },
-                    { value: 'c', text: "Que la luz no interactúa con la materia." },
-                    { value: 'd', text: "Que la luz se puede ver como una partícula." }
-                ]
-            },
-            {
-                id: 'q25',
-                indicator: 'Indicador 5.5: Explica con seguridad el objeto de estudio de la óptica geométrica y de la óptica ondulatoria.',
-                question: "¿Qué teoría de la luz es fundamental para entender la interferencia?",
-                options: [
-                    { value: 'a', text: "La teoría ondulatoria." },
-                    { value: 'b', text: "La teoría corpuscular." },
-                    { value: 'c', text: "La teoría cuántica." },
-                    { value: 'd', text: "La teoría de la relatividad." }
-                ]
-            },
-            // Indicador 5.6
-            {
-                id: 'q26',
-                indicator: 'Indicador 5.6: Describe y ejemplifica con interés los fenómenos de fuentes de onda y rayo.',
-                question: "¿Qué es una fuente de onda?",
-                options: [
-                    { value: 'a', text: "El punto o región donde se origina una onda." },
-                    { value: 'b', text: "El medio a través del cual se propaga una onda." },
-                    { value: 'c', text: "La dirección en la que viaja una onda." },
-                    { value: 'd', text: "La distancia entre dos puntos de la onda." }
-                ]
-            },
-            {
-                id: 'q27',
-                indicator: 'Indicador 5.6: Describe y ejemplifica con interés los fenómenos de fuentes de onda y rayo.',
-                question: "¿Qué ocurre cuando dos ondas de igual amplitud y frecuencia se encuentran en fase?",
-                options: [
-                    { value: 'a', text: "Se produce una interferencia constructiva." },
-                    { value: 'b', text: "Se produce una interferencia destructiva." },
-                    { value: 'c', text: "Se produce una difracción." },
-                    { value: 'd', text: "Se produce una polarización." }
-                ]
-            },
-            {
-                id: 'q28',
-                indicator: 'Indicador 5.6: Describe y ejemplifica con interés los fenómenos de fuentes de onda y rayo.',
-                question: "¿Cómo se define un rayo en el contexto de la propagación de ondas?",
-                options: [
-                    { value: 'a', text: "Una línea que indica la dirección de propagación de la onda." },
-                    { value: 'b', text: "La distancia entre dos frentes de onda." },
-                    { value: 'c', text: "El punto donde la onda cambia de medio." },
-                    { value: 'd', text: "La amplitud máxima de la onda." }
-                ]
-            },
-            {
-                id: 'q29',
-                indicator: 'Indicador 5.6: Describe y ejemplifica con interés los fenómenos de fuentes de onda y rayo.',
-                question: "¿Qué fenómeno se observa cuando una onda pasa por una rendija estrecha y se propaga en varias direcciones?",
-                options: [
-                    { value: 'a', text: "Difracción." },
-                    { value: 'b', text: "Interferencia." },
-                    { value: 'c', text: "Reflexión." },
-                    { value: 'd', text: "Polarización." }
-                ]
-            },
-            {
-                id: 'q30',
-                indicator: 'Indicador 5.6: Describe y ejemplifica con interés los fenómenos de fuentes de onda y rayo.',
-                question: "¿Qué relación tiene el concepto de rayo con la óptica geométrica?",
-                options: [
-                    { value: 'a', text: "Los rayos representan la dirección en la que viaja la luz en la óptica geométrica." },
-                    { value: 'b', text: "Los rayos representan la frecuencia de la luz en la óptica geométrica." },
-                    { value: 'c', text: "Los rayos indican la longitud de onda en la óptica geométrica." },
-                    { value: 'd', text: "Los rayos son usados para medir la amplitud de la luz." }
-                ]
-            },
-            // Indicador 5.7
-            {
-                id: 'q31',
-                indicator: 'Indicador 5.7: Indaga, analiza e interpreta correctamente el principio de Huygens en la propagación de ondas.',
-                question: "¿Qué establece el principio de Huygens sobre la propagación de las ondas?",
-                options: [
-                    { value: 'a', text: "Cada punto de un frente de onda actúa como una fuente secundaria de ondas esféricas." },
-                    { value: 'b', text: "Las ondas se propagan en línea recta sin desviarse." },
-                    { value: 'c', text: "La velocidad de la onda es constante en todos los medios." },
-                    { value: 'd', text: "La energía de la onda disminuye con la distancia." }
-                ]
-            },
-            {
-                id: 'q32',
-                indicator: 'Indicador 5.7: Indaga, analiza e interpreta correctamente el principio de Huygens en la propagación de ondas.',
-                question: "¿Cómo se utiliza el principio de Huygens para explicar la difracción?",
-                options: [
-                    { value: 'a', text: "La difracción ocurre cuando las ondas se encuentran con un obstáculo y cada punto de la onda genera ondas secundarias que se propagan en diferentes direcciones." },
-                    { value: 'b', text: "La difracción ocurre cuando las ondas se reflejan en una superficie." },
-                    { value: 'c', text: "La difracción no se puede explicar con el principio de Huygens." },
-                    { value: 'd', text: "La difracción ocurre cuando las ondas aceleran al cambiar de medio." }
-                ]
-            },
-            {
-                id: 'q33',
-                indicator: 'Indicador 5.7: Indaga, analiza e interpreta correctamente el principio de Huygens en la propagación de ondas.',
-                question: "¿Cómo afecta el principio de Huygens a la comprensión de la propagación de ondas en diferentes medios?",
-                options: [
-                    { value: 'a', text: "Permite predecir cómo las ondas cambiarán de dirección cuando pasan de un medio a otro." },
-                    { value: 'b', text: "Permite calcular la velocidad de la onda en diferentes medios." },
-                    { value: 'c', text: "Permite determinar la amplitud de la onda después de un cambio de medio." },
-                    { value: 'd', text: "Permite mantener la dirección de la onda constante sin importar el medio." }
-                ]
-            },
-            {
-                id: 'q34',
-                indicator: 'Indicador 5.7: Indaga, analiza e interpreta correctamente el principio de Huygens en la propagación de ondas.',
-                question: "¿Qué fenómeno óptico puede explicarse mediante el principio de Huygens?",
-                options: [
-                    { value: 'a', text: "La refracción de la luz al pasar de un medio a otro." },
-                    { value: 'b', text: "La reflexión de la luz en un espejo." },
-                    { value: 'c', text: "La absorción de la luz por un material." },
-                    { value: 'd', text: "La dispersión de la luz en un prisma." }
-                ]
-            },
-            {
-                id: 'q35',
-                indicator: 'Indicador 5.7: Indaga, analiza e interpreta correctamente el principio de Huygens en la propagación de ondas.',
-                question: "¿Cómo se relaciona el principio de Huygens con la interferencia de ondas?",
-                options: [
-                    { value: 'a', text: "La interferencia ocurre cuando las ondas generadas por diferentes puntos de un frente de onda se superponen." },
-                    { value: 'b', text: "La interferencia es independiente del principio de Huygens." },
-                    { value: 'c', text: "La interferencia ocurre solo cuando las ondas viajan en la misma dirección." },
-                    { value: 'd', text: "La interferencia se debe al cambio de amplitud de la onda." }
-                ]
-            },
-            // Indicador 5.8
-            {
-                id: 'q36',
-                indicator: 'Indicador 5.8: Experimenta, representa, explica y mide con precisión el ángulo de reflexión de un rayo en un espejo.',
                 question: "¿Cuál es la ley de la reflexión de la luz?",
-                options: [
-                    { value: 'a', text: "El ángulo de incidencia es igual al ángulo de reflexión." },
-                    { value: 'b', text: "El ángulo de incidencia es menor que el ángulo de reflexión." },
-                    { value: 'c', text: "El ángulo de incidencia es mayor que el ángulo de reflexión." },
-                    { value: 'd', text: "El ángulo de reflexión depende del medio." }
+                answers: [
+                    { text: "El ángulo de incidencia es igual al ángulo de reflexión.", correct: true },
+                    { text: "El ángulo de incidencia es menor que el ángulo de reflexión.", correct: false },
+                    { text: "El ángulo de incidencia es mayor que el ángulo de reflexión.", correct: false },
+                    { text: "El ángulo de reflexión depende del medio.", correct: false }
                 ]
             },
             {
-                id: 'q37',
-                indicator: 'Indicador 5.8: Experimenta, representa, explica y mide con precisión el ángulo de reflexión de un rayo en un espejo.',
-                question: "¿Cómo se mide el ángulo de reflexión en un espejo plano?",
-                options: [
-                    { value: 'a', text: "Midiendo el ángulo entre el rayo reflejado y la normal a la superficie del espejo." },
-                    { value: 'b', text: "Midiendo el ángulo entre el rayo incidente y la superficie del espejo." },
-                    { value: 'c', text: "Midiendo el ángulo entre el rayo reflejado y la superficie del espejo." },
-                    { value: 'd', text: "Midiendo el ángulo entre el rayo incidente y el rayo reflejado." }
+                question: "¿Qué sucede con la energía de una onda cuando ocurre la resonancia?",
+                answers: [
+                    { text: "La energía se amplifica significativamente.", correct: true },
+                    { text: "La energía disminuye rápidamente.", correct: false },
+                    { text: "La energía se dispersa en todas direcciones.", correct: false },
+                    { text: "La energía permanece constante.", correct: false }
                 ]
             },
             {
-                id: 'q38',
-                indicator: 'Indicador 5.8: Experimenta, representa, explica y mide con precisión el ángulo de reflexión de un rayo en un espejo.',
-                question: "¿Qué ocurre con la dirección de un rayo de luz cuando se refleja en un espejo plano?",
-                options: [
-                    { value: 'a', text: "El rayo se refleja en la dirección opuesta pero en el mismo plano." },
-                    { value: 'b', text: "El rayo se refleja en una dirección aleatoria." },
-                    { value: 'c', text: "El rayo se refleja sin cambiar de dirección." },
-                    { value: 'd', text: "El rayo se absorbe completamente por el espejo." }
+                question: "¿Cómo afecta la resonancia a un puente cuando una frecuencia de onda coincide con su frecuencia natural?",
+                answers: [
+                    { text: "Puede amplificar las vibraciones y causar daños estructurales.", correct: true },
+                    { text: "Disminuye las vibraciones y estabiliza el puente.", correct: false },
+                    { text: "No tiene efecto sobre la estructura del puente.", correct: false },
+                    { text: "Cambia la frecuencia natural del puente.", correct: false }
                 ]
             },
             {
-                id: 'q39',
-                indicator: 'Indicador 5.8: Experimenta, representa, explica y mide con precisión el ángulo de reflexión de un rayo en un espejo.',
-                question: "¿Qué es la normal en el contexto de la reflexión de la luz?",
-                options: [
-                    { value: 'a', text: "Una línea perpendicular a la superficie en el punto de incidencia." },
-                    { value: 'b', text: "La dirección del rayo reflejado." },
-                    { value: 'c', text: "La línea paralela a la superficie reflectora." },
-                    { value: 'd', text: "La dirección del rayo incidente." }
+                question: "¿Qué relación existe entre la frecuencia y la longitud de onda de una onda mecánica en un medio determinado?",
+                answers: [
+                    { text: "La frecuencia y la longitud de onda son inversamente proporcionales.", correct: true },
+                    { text: "La frecuencia y la longitud de onda son directamente proporcionales.", correct: false },
+                    { text: "La frecuencia no afecta la longitud de onda.", correct: false },
+                    { text: "La frecuencia y la longitud de onda son independientes entre sí.", correct: false }
                 ]
             },
             {
-                id: 'q40',
-                indicator: 'Indicador 5.8: Experimenta, representa, explica y mide con precisión el ángulo de reflexión de un rayo en un espejo.',
-                question: "¿Qué tipo de imagen se forma en un espejo plano?",
-                options: [
-                    { value: 'a', text: "Una imagen virtual, derecha y del mismo tamaño que el objeto." },
-                    { value: 'b', text: "Una imagen real, invertida y más pequeña que el objeto." },
-                    { value: 'c', text: "Una imagen virtual, invertida y más grande que el objeto." },
-                    { value: 'd', text: "Una imagen real, derecha y del mismo tamaño que el objeto." }
+                question: "¿Cómo se propaga una onda sonora en el aire?",
+                answers: [
+                    { text: "A través de la compresión y rarefacción de las moléculas de aire.", correct: true },
+                    { text: "Por la vibración perpendicular de las moléculas de aire.", correct: false },
+                    { text: "Por el desplazamiento de las moléculas sin cambio de densidad.", correct: false },
+                    { text: "Por la dispersión de las moléculas en todas las direcciones.", correct: false }
                 ]
             },
-            // Indicador 5.9
             {
-                id: 'q41',
-                indicator: 'Indicador 5.9: Experimenta, representa, explica y mide con precisión el ángulo de refracción de un rayo al pasar de un medio a otro diferente.',
+                question: "¿Cómo se define la amplitud de una onda mecánica?",
+                answers: [
+                    { text: "La máxima distancia que alcanza una partícula del medio desde su posición de equilibrio.", correct: true },
+                    { text: "La distancia entre dos crestas consecutivas.", correct: false },
+                    { text: "La cantidad de energía transportada por la onda.", correct: false },
+                    { text: "La velocidad de la onda en el medio.", correct: false }
+                ]
+            },
+            {
                 question: "¿Qué es la refracción de la luz?",
-                options: [
-                    { value: 'a', text: "El cambio de dirección de un rayo de luz al pasar de un medio a otro." },
-                    { value: 'b', text: "La dispersión de la luz en un prisma." },
-                    { value: 'c', text: "La reflexión interna de la luz en un medio." },
-                    { value: 'd', text: "La absorción de la luz por un material." }
+                answers: [
+                    { text: "El cambio de dirección de un rayo de luz al pasar de un medio a otro.", correct: true },
+                    { text: "La dispersión de la luz en un prisma.", correct: false },
+                    { text: "La reflexión interna de la luz en un medio.", correct: false },
+                    { text: "La absorción de la luz por un material.", correct: false }
                 ]
             },
             {
-                id: 'q42',
-                indicator: 'Indicador 5.9: Experimenta, representa, explica y mide con precisión el ángulo de refracción de un rayo al pasar de un medio a otro diferente.',
-                question: "¿Cómo se determina el ángulo de refracción de un rayo de luz?",
-                options: [
-                    { value: 'a', text: "Utilizando la Ley de Snell, que relaciona los ángulos de incidencia y refracción con los índices de refracción de los medios." },
-                    { value: 'b', text: "Midiendo directamente el ángulo entre el rayo incidente y la normal." },
-                    { value: 'c', text: "Midiendo el ángulo entre el rayo reflejado y la superficie del material." },
-                    { value: 'd', text: "Calculando la diferencia entre los ángulos de incidencia y reflexión." }
+                question: "¿Qué propiedad de una onda mecánica se mide en hercios (Hz)?",
+                answers: [
+                    { text: "La frecuencia.", correct: true },
+                    { text: "La amplitud.", correct: false },
+                    { text: "La velocidad.", correct: false },
+                    { text: "La longitud de onda.", correct: false }
                 ]
             },
             {
-                id: 'q43',
-                indicator: 'Indicador 5.9: Experimenta, representa, explica y mide con precisión el ángulo de refracción de un rayo al pasar de un medio a otro diferente.',
-                question: "¿Qué ocurre cuando un rayo de luz pasa de un medio menos denso a uno más denso?",
-                options: [
-                    { value: 'a', text: "El rayo se refracta hacia la normal." },
-                    { value: 'b', text: "El rayo se refracta alejándose de la normal." },
-                    { value: 'c', text: "El rayo no cambia de dirección." },
-                    { value: 'd', text: "El rayo se refleja en la superficie del nuevo medio." }
+                question: "¿Cómo se mide el ángulo de reflexión en un espejo plano?",
+                answers: [
+                    { text: "Midiendo el ángulo entre el rayo reflejado y la normal a la superficie del espejo.", correct: true },
+                    { text: "Midiendo el ángulo entre el rayo incidente y la superficie del espejo.", correct: false },
+                    { text: "Midiendo el ángulo entre el rayo reflejado y la superficie del espejo.", correct: false },
+                    { text: "Midiendo el ángulo entre el rayo incidente y el rayo reflejado.", correct: false }
                 ]
             },
             {
-                id: 'q44',
-                indicator: 'Indicador 5.9: Experimenta, representa, explica y mide con precisión el ángulo de refracción de un rayo al pasar de un medio a otro diferente.',
-                question: "¿Qué es el índice de refracción?",
-                options: [
-                    { value: 'a', text: "Una medida de la velocidad de la luz en un medio en comparación con el vacío." },
-                    { value: 'b', text: "El ángulo en el que un rayo de luz se refracta." },
-                    { value: 'c', text: "La cantidad de luz absorbida por un medio." },
-                    { value: 'd', text: "La longitud de onda de la luz en un medio." }
-                ]
-            },
-            {
-                id: 'q45',
-                indicator: 'Indicador 5.9: Experimenta, representa, explica y mide con precisión el ángulo de refracción de un rayo al pasar de un medio a otro diferente.',
-                question: "¿Qué relación describe la Ley de Snell?",
-                options: [
-                    { value: 'a', text: "La relación entre los ángulos de incidencia y refracción y los índices de refracción de dos medios." },
-                    { value: 'b', text: "La relación entre la velocidad de la luz y la frecuencia en un medio." },
-                    { value: 'c', text: "La relación entre la longitud de onda y la amplitud de una onda." },
-                    { value: 'd', text: "La relación entre la intensidad de la luz y la distancia al foco." }
+                question: "¿Cuál es la principal diferencia entre la óptica geométrica y la óptica ondulatoria?",
+                answers: [
+                    { text: "La óptica geométrica considera la luz como rayos, mientras que la óptica ondulatoria considera la luz como ondas.", correct: true },
+                    { text: "La óptica geométrica estudia la interferencia, mientras que la óptica ondulatoria estudia la reflexión.", correct: false },
+                    { text: "La óptica geométrica considera la luz como partículas, mientras que la óptica ondulatoria considera la luz como ondas.", correct: false },
+                    { text: "La óptica geométrica es un campo moderno, mientras que la óptica ondulatoria es una teoría antigua.", correct: false }
                 ]
             }
         ];
 
-        const correctAnswerKeys = { 
-            q1: 'a', q2: 'a', q3: 'a', q4: 'a', q5: 'a',
-            q6: 'a', q7: 'a', q8: 'a', q9: 'a', q10: 'a',
-            q11: 'a', q12: 'a', q13: 'a', q14: 'a', q15: 'a',
-            q16: 'a', q17: 'a', q18: 'a', q19: 'a', q20: 'a',
-            q21: 'a', q22: 'a', q23: 'a', q24: 'a', q25: 'a',
-            q26: 'a', q27: 'a', q28: 'a', q29: 'a', q30: 'a',
-            q31: 'a', q32: 'a', q33: 'a', q34: 'a', q35: 'a',
-            q36: 'a', q37: 'a', q38: 'a', q39: 'a', q40: 'a',
-            q41: 'a', q42: 'a', q43: 'a', q44: 'a', q45: 'a'
-        };
+        const authorizedNIEs = [
+            "4267837", "3850952", "3851018", "5032035", "19806181", "6297536",
+            "2608724", "6262810", "4267838", "20162435", "3850923", "19806209",
+            "4267828", "3850942"
+        ];
+
+        let attempt = 0;
+        const maxAttempts = 2;
+        const evaluationName = "Evaluación Unidad 5: Las Ondas";
+        let timer;
+        let timeLeft = 1800; // 30 minutos en segundos
+        let startTime;
+        let manipulationCount = 0;
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -629,99 +299,190 @@
             return array;
         }
 
-        function displayQuestions() {
-            const container = document.getElementById('questions-container');
-            const shuffledQuestions = shuffle([...questions]);
+        function loadQuiz() {
+            const quizContainer = document.getElementById('quiz');
+            quizContainer.innerHTML = '';
+            
+            // Shuffle questions and answers
+            const shuffledQuizData = shuffle([...quizData]);
 
-            shuffledQuestions.forEach((q, index) => {
-                const questionElement = document.createElement('div');
-                questionElement.classList.add('question');
-                questionElement.innerHTML = `
-                    <h3>${q.indicator}</h3>
-                    <p>${index + 1}. ${q.question}</p>
-                    ${q.options.map(option => `
-                        <input type="radio" name="${q.id}" value="${option.value}" required> ${option.value}) ${option.text}<br>
-                    `).join('')}
-                `;
-                container.appendChild(questionElement);
+            shuffledQuizData.forEach((data, index) => {
+                const questionContainer = document.createElement('div');
+                questionContainer.className = 'question';
+
+                const questionTitle = document.createElement('h3');
+                questionTitle.innerText = `${index + 1}. ${data.question}`;
+                questionContainer.appendChild(questionTitle);
+
+                const optionsList = document.createElement('ul');
+                optionsList.className = 'options';
+
+                shuffle(data.answers).forEach(answer => {
+                    const option = document.createElement('li');
+                    const optionLabel = document.createElement('label');
+                    const optionInput = document.createElement('input');
+                    optionInput.type = 'radio';
+                    optionInput.name = `question${index}`;
+                    optionInput.value = answer.correct;
+                    optionLabel.appendChild(optionInput);
+                    optionLabel.appendChild(document.createTextNode(answer.text));
+                    option.appendChild(optionLabel);
+                    optionsList.appendChild(option);
+                });
+
+                questionContainer.appendChild(optionsList);
+                quizContainer.appendChild(questionContainer);
             });
         }
 
-        function startTimer() {
-            document.getElementById('timer').classList.remove('hidden');
-            startTime = new Date();
-            const timerInterval = setInterval(() => {
-                const minutes = Math.floor(timeRemaining / 60);
-                const seconds = timeRemaining % 60;
-                timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                if (timeRemaining === 0) {
-                    clearInterval(timerInterval);
-                    showResults("Tiempo agotado. No se pudo completar la evaluación.", []);
-                }
-                timeRemaining--;
-            }, 1000);
-        }
-
-        document.getElementById('infoForm').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const name = document.getElementById('name').value;
-            const nie = document.getElementById('nie').value;
-
-            if (!nieList.includes(nie)) {
-                alert("NIE no autorizado.");
+        function submitQuiz() {
+            const fullname = document.getElementById('fullname').value.trim();
+            const nie = document.getElementById('nie').value.trim();
+            
+            if (!fullname || !nie) {
+                alert('Por favor, ingresa tu nombre completo y NIE.');
                 return;
             }
 
-            document.getElementById('studentInfoForm').classList.add('hidden');
-            document.getElementById('quiz').classList.remove('hidden');
-            displayQuestions();
-            startTimer();
-        });
+            if (attempt >= maxAttempts) {
+                alert('Has alcanzado el número máximo de intentos.');
+                return;
+            }
 
-        document.getElementById('submitQuiz').addEventListener('click', function () {
-            let correctAnswers = 0;
+            const answers = document.querySelectorAll('input[type="radio"]:checked');
             let incorrectAnswers = [];
 
-            questions.forEach(q => {
-                const selectedAnswer = document.querySelector(`input[name="${q.id}"]:checked`);
-                if (selectedAnswer) {
-                    if (selectedAnswer.value === correctAnswerKeys[q.id]) {
-                        correctAnswers++;
-                    } else {
-                        incorrectAnswers.push(`Pregunta ${q.id.substring(1)} incorrecta.`);
-                    }
+            quizData.forEach((data, index) => {
+                const selected = answers[index] ? answers[index].value === 'true' : null;
+                if (selected === false || selected === null) {
+                    incorrectAnswers.push(index + 1);
                 }
             });
 
-            const score = (correctAnswers / questions.length) * 10;
+            // Mostrar los resultados en el modal
+            document.getElementById('modalName').innerText = `Nombre: ${fullname}`;
+            document.getElementById('modalNIE').innerText = `NIE: ${nie}`;
+            const modalIncorrectAnswers = document.getElementById('modalIncorrectAnswers');
+            modalIncorrectAnswers.innerHTML = '';
+            incorrectAnswers.forEach((questionNumber, index) => {
+                const div = document.createElement('div');
+                div.innerText = `Pregunta ${questionNumber}`;
+                modalIncorrectAnswers.appendChild(div);
+            });
+
+            // Mostrar detalles adicionales
             const endTime = new Date();
-            const timeTaken = Math.floor((endTime - startTime) / 1000); // Tiempo en segundos
+            const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+            const currentDate = new Date();
+            const modalDetails = document.getElementById('modalDetails');
+            modalDetails.innerHTML = `
+                Fecha: ${currentDate.toLocaleDateString()}<br>
+                Hora: ${currentDate.toLocaleTimeString()}<br>
+                Tiempo en realizar la prueba: ${timeTaken} segundos<br>
+                Nombre de la unidad: ${evaluationName}<br>
+                Calificación: ${((quizData.length - incorrectAnswers.length) / quizData.length * 10).toFixed(2)}/10
+            `;
 
-            showResults(`Calificación: ${score.toFixed(2)} / 10`, incorrectAnswers, timeTaken);
-        });
+            // Mostrar intentos de manipulación
+            document.getElementById('manipulationCount').innerText = `Intentos de manipulación detectados: ${manipulationCount}`;
 
-        function showResults(scoreText, incorrectAnswers, timeTaken) {
-            const date = new Date();
-            const minutesTaken = Math.floor(timeTaken / 60);
-            const secondsTaken = timeTaken % 60;
+            // Mostrar contador de reintentos
+            document.getElementById('attemptCount').innerText = `Reintentos: ${attempt + 1}`;
 
-            document.getElementById('quiz').classList.add('hidden');
-            document.getElementById('resultsModal').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
+            const modal = document.getElementById('resultModal');
+            modal.style.display = 'block';
 
-            document.getElementById('date').textContent = `Fecha: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-            document.getElementById('timeTaken').textContent = `Tiempo tomado: ${minutesTaken} minutos y ${secondsTaken} segundos`;
-            document.getElementById('unitEvaluated').textContent = `Unidad Evaluada: Unidad 5: Las Ondas`;
-            document.getElementById('studentName').textContent = `Nombre del Estudiante: ${document.getElementById('name').value}`;
-            document.getElementById('studentNIE').textContent = `NIE: ${document.getElementById('nie').value}`;
-            document.getElementById('score').textContent = scoreText;
-            document.getElementById('incorrectAnswers').textContent = incorrectAnswers.join(', ');
+            attempt++;
+            if (attempt >= maxAttempts) {
+                alert('Has alcanzado el número máximo de intentos.');
+                // Aquí puedes agregar código para bloquear la MAC o deshabilitar la evaluación
+            }
         }
 
-        document.getElementById('closeModal').addEventListener('click', function () {
-            document.getElementById('resultsModal').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
+        document.getElementById('submit').addEventListener('click', submitQuiz);
+
+        document.getElementById('startQuiz').addEventListener('click', function() {
+            const nie = document.getElementById('nie').value.trim();
+            if (!authorizedNIEs.includes(nie)) {
+                alert('NIE no autorizado.');
+                return;
+            }
+            document.querySelector('.quiz-container').style.display = 'block';
+            document.getElementById('infoModal').style.display = 'none';
+            startTime = new Date();
+            startTimer();
+            loadQuiz();
         });
+
+        // Modal close functionality
+        const closeModal = document.getElementsByClassName('close')[0];
+        closeModal.onclick = function() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('resultModal')) {
+                document.getElementById('resultModal').style.display = 'none';
+            }
+        }
+
+        document.addEventListener("contextmenu", function(e){
+            e.preventDefault();
+            updateCaptureCount();
+        }, false);
+
+        function startTimer() {
+            timer = setInterval(function() {
+                timeLeft--;
+                const timerElement = document.getElementById('timer');
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+                timerElement.innerText = `${minutes}:${seconds}`;
+
+                if (timeLeft <= 600) {
+                    timerElement.style.backgroundColor = 'red';
+                } else if (timeLeft <= 1200) {
+                    timerElement.style.backgroundColor = 'orange';
+                } else {
+                    timerElement.style.backgroundColor = 'green';
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function updateCaptureCount() {
+            manipulationCount++;
+        }
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                updateCaptureCount();
+            }
+        });
+
+        window.addEventListener('pagehide', function() {
+            updateCaptureCount();
+        });
+
+        window.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            updateCaptureCount();
+        });
+
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                updateCaptureCount();
+            }
+        });
+
+        window.onload = function() {
+            document.getElementById('infoModal').style.display = 'block';
+        }
     </script>
 </body>
 </html>
